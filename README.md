@@ -10,6 +10,7 @@ Text editor with automated timestamps for recording meeting minutes. Available [
 - Dark mode
 - Font customisation
 - Timestamp format options
+- Get it to work on mobile (?)
 - Markdown syntax for link insertions
 - Fullscreen mode
 
