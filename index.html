@@ -1,0 +1,527 @@
+<html>
+<head>
+  <title>  </title>
+   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  
+<style>
+
+  :root{
+    --main-color:  #fff;
+    --margin-left: 80px;
+    --sidebar-color: #efefef;
+    --sidebar-width: 350px;
+  }
+
+  body{
+    font-family: sans-serif;
+  }
+
+  textarea {
+    display: block;
+    resize: none;
+    border: none;
+    overflow: auto;
+    outline: none;
+    font: 20px sans-serif;
+    caret-color: #333;
+    background: #fff;
+    color: #333;
+    box-sizing: border-box;
+    line-height: 1.6em;
+    user-select: auto;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    width: calc(100% - var(--margin-left));
+    padding: 40px;
+    padding-left: 80px;
+    margin-top: 50px;
+    margin-left: 40px;
+    height:  calc(100vh - 80px);
+    overflow-y: scroll;
+    transition: transform var(--transition-duration) ease;
+    white-space: pre-wrap;
+    transition: all 0.3s ease;
+  }
+
+  #sidebar {color: var(--z10);
+    --container-footer-height:  76px;
+    --container-header-height:  60px;
+    left: 0px;
+    bottom: 0px;
+    top: 60px;
+    position: fixed;
+    display: block;
+    width: var(--sidebar-width);
+    transform: translate(-100%, 0px);
+    z-index: 100;
+    background: var(--sidebar-color);
+    font-family: sans-serif;
+    font-size: 16px;
+    transition: transform 350ms ease 0s;
+    padding: 20px 30px;
+
+  }
+
+  #top-menu{
+    width: calc(100% - 10px);
+    padding: 10px 5px 5px 5px;
+    height: 40px; 
+    /*border: solid 1px black;*/
+    position: fixed;
+    top: 0px;
+    background: var(--main-color);
+  }
+
+   button{
+    height: 40px;
+    width: 40px;
+    padding: 0px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+
+  button > img:hover{
+    opacity:  1;
+  }
+
+  button > img{
+    width:  100%;
+    height: 100%;
+    transition: all 0.3s ease;
+    opacity:  0.3;
+    border-radius: 5px;
+  }
+
+  #right{
+    width: calc(100% - 50px);
+    display: inline-block;
+    text-align: right;
+    /*border: solid 1px red;*/
+    vertical-align: top;
+    height: 37.5px;
+    padding-top: 2.55px;
+  }
+
+  #right button{
+    height: 35px;
+    width: 35px;
+    margin: 0px 15px;
+    border-radius: 5px;
+  }
+
+  .selected-button{
+    filter: invert(100);
+    opacity: 1 !important;
+  }
+
+  .selected-button{
+    filter: invert(100);
+    opacity: 1 !important;
+  }
+
+  #popup{
+    position: fixed;
+    padding:  10px 20px 10px 20px;
+    font-size: 16px;
+    transition: all 0.6s ease;
+    transform: translateX(-50%);
+    border-radius: 4px;
+    margin-left: 50%;
+    background: #333;
+    color:  white;
+    text-align: center;
+    opacity: 0;
+    top: 10;
+  }
+
+  p{
+    line-height: 1.5em;
+    margin: 30px 0px;
+  }
+
+  a{
+    color: var(--second-color);
+  }
+
+</style>
+</head>
+
+<body onload="onload()">
+  
+  <div id=top-menu> 
+    <button id=toggle-button onclick="toggleSidebar()"> <img src="logo.jpg"> </button>
+
+    <div id=right>
+      <button onclick="toggleSpellcheck()"> <img id=spellcheck-image src="spellcheck.jpg"> </button>
+      <!--  <button onclick="toggleDarkMode()"> <img id=darkmode-image src="darkmode.jpg"> </button> -->
+    </div>
+
+  </div>
+
+  <div id=sidebar> 
+    <p> Text editor for jotting down meeting minutes. Hit <b>Shift + Enter</b> to add a new line with a timestamp.</p>
+
+    <p> All data is stored locally and never sent to a server. Use <b>CTRL + S</b> to save your content as a <code>.txt</code> file, or just copy the text to where it needs to go. </p>
+
+    <p>  Credit for the idea goes to<a href="https://twitter.com/jmduke">@jmduke's</a> page of <a href="https://www.arcana.computer/catalogs/project-ideas">Project Ideas</a>. Design inspired by <a href="blank.page">blank.page</a>.</p>
+
+    <p> If you find this page useful, consider donating to support it.</p>
+
+    <p><a href="https://blank.page">Buy me a <s>coffee</s> book</a> <br> 
+      <a href="https://joodaloop.com"> Creator's site</a> <br>
+      <a href="https://joodaloop.com"> Report a bug</a></p>
+
+  </div>
+
+
+  <textarea id="sheet" class="sheet" spellcheck="false" placeholder="Start off with the meeting title..."></textarea>
+
+  <div id=popup>  </div>
+
+<script>
+
+  //get cursor position, if <12 characters into a new line, set it to 12 characters into that line.
+  //if shift + enter, add a timestamp + 3 or 4 characters. 
+  //prevent default for tab [event.preventDefault()]; 
+
+  document.body.ontouchmove = function (e) {
+    e.preventDefault();
+  }
+
+  function $(id){
+    return document.getElementById(id)
+  }
+
+  let sheet = $("sheet")
+  let time = $("timestamps")
+  let sidebarStatus = false
+  let spellcheck = false
+  let title = "minutes.page"
+  let stored = localStorage.getItem("savedFile")
+
+
+  function onload(){
+    document.title = title
+    sheet.focus()
+
+    if(stored != null){
+      sheet.value = stored
+    }
+  }
+
+
+  sheet.addEventListener('keypress', keyEvent)
+  // sheet.addEventListener('keydown', handleCommandBackspace)
+  sheet.addEventListener('click', closeSideBar)
+  sheet.addEventListener('keydown', handleBackspace)
+  sheet.addEventListener('keydown', handleTab)
+  sheet.addEventListener('keyup', changeTitle)
+  sheet.addEventListener('keydown', saveToLocalStorage)
+
+  function keyEvent(event){
+
+    const enter = event.key === "Enter" || event.key === "Return"
+
+    let curPos = sheet.selectionStart
+          let text = sheet.value
+          //let count = getCurrentRow()
+          //let curPosInLine = curPos
+
+
+    if(event.shiftKey && enter){
+          
+        event.preventDefault()
+
+        document.execCommand("insertText", false, ("\n" + newTimeStamp()));
+
+        // setTimeout( () => { sheet.value = text.slice(0, curPos) + "\n" + newTimeStamp() + text.slice(curPos) 
+        //         sheet.selectionStart = curPos + 13
+        //         sheet.selectionEnd = curPos + 13}, 5)
+        
+    }
+
+
+    else if(enter && !event.shiftKey ){
+
+        event.preventDefault()
+
+        newLine()
+
+         // sheet.value = text.slice(0, curPos) + "\n"  + "                  " + text.slice(curPos)
+         // sheet.selectionStart = curPos + 19
+         // sheet.selectionEnd = curPos + 19
+
+      }
+
+    //   if (event.key === "l" && command && event.shiftKey) {
+    //   event.preventDefault();
+    //   toggleDarkMode();
+    // }
+
+     if (event.key === "s" && (event.metaKey || event.ctrlKey) ){
+        event.preventDefault()
+        saveFileAsTXT()
+    }
+
+  }
+
+
+  function handleTab(event){
+
+        if(event.key == "Tab"){
+
+            event.preventDefault();
+            newTab();
+    }
+
+  }
+
+
+  function newLine(){
+      document.execCommand("insertText", false, ("\n" + "                  "));
+    }
+
+    function newTab(){
+
+      const tabKey = "       ";
+      document.execCommand("insertText", false, tabKey);
+    }
+
+
+
+  function handleCommandBackspace(event){
+
+     // let curPos = sheet.selectionStart
+     // let text = sheet.value
+    let backspace = event.key === "Delete" || event.key === "Backspace";
+
+     if( backspace && (event.metaKey || event.ctrlKey)){
+
+        let space = "                  "
+        setTimeout(() => document.execCommand("insertText", false, space), 1)
+
+       }
+  }
+
+
+  function handleBackspace(event){
+
+    let curPos = sheet.selectionStart
+    let text = sheet.value
+    const backspace = event.key === "Delete" || event.key === "Backspace";
+
+    if(backspace && !(event.metaKey || event.ctrlKey)){
+
+        let before = text.slice(0, curPos)
+
+        let last17OfBefore = before.slice(before.length - 17, before.length)
+
+        if(last17OfBefore.trim() == 0 && before[before.length-1] != '\n' && before[before.length - 19] == "\n"){
+
+          event.preventDefault()
+
+           sheet.value = text.slice(0, curPos - 19) +  text.slice(curPos)
+           sheet.selectionStart = curPos - 19
+           sheet.selectionEnd = curPos + - 19
+
+       }
+      }
+
+    }
+
+
+  function newTimeStamp(){
+    let d =  new Date()
+        let seconds = d.getSeconds()
+        let minutes = d.getMinutes()
+        let hours = d.getHours()
+
+        if(seconds < 10){ seconds = "0"+seconds}
+        if(hours < 10){ hours = "0"+hours}
+        if(minutes < 10){ minutes = "0"+minutes}
+
+        return ("["+hours+":"+minutes+":"+seconds+"]  ")
+  }
+
+
+  function toggleSpellcheck(){
+
+        if(spellcheck == true){
+
+           sheet.spellcheck = false
+           spellcheck = false
+           showPopup("Spellcheck disabled")
+        }
+
+        else{
+
+           sheet.spellcheck = true
+           spellcheck = true
+           showPopup("Spellcheck enabled")
+           
+        }
+
+         $("spellcheck-image").classList.toggle("selected-button")
+  }
+
+
+  function toggleSidebar(){
+
+        if(sidebarStatus == true){
+
+            $("sidebar").style.transform = "translateX(-100%)"  
+            sidebarStatus = false
+            $("sheet").style.marginLeft = "40px"
+            
+
+        }
+
+        else{
+           $("sidebar").style.transform = "translateX(0px)"
+           sidebarStatus = true
+           $("sheet").style.marginLeft = "calc(30px + var(--sidebar-width))"
+           
+         }
+  }
+
+
+  function closeSideBar(){
+    $("sidebar").style.transform = "translateX(-100%)"  
+            sidebarStatus = false
+            $("sheet").style.marginLeft = "40px"
+  }
+
+
+  function showPopup(text){
+    $("popup").innerText = text
+    $("popup").style.opacity = 1
+
+    setTimeout( hidePopup, 1500)
+  }
+
+
+  function hidePopup(){
+
+     $("popup").style.opacity = 0
+  }
+
+
+  function saveToLocalStorage(){
+
+        localStorage.clear()
+        localStorage.setItem("savedFile", sheet.value)
+  }
+
+  function changeTitle(){
+
+        let textHeader
+        let text = sheet.value.split("\n")[0] // .reduce( (a,b) => a.trim() + " " + b.trim())
+
+        if( text.length > 0){
+
+           textHeader = text.slice(0, Math.min(sheet.value.length, 20)).trim()
+
+        }
+
+        else{
+          title = "minutes.page"
+          document.title = title
+          return false
+        }
+
+        if(title != textHeader){
+
+             title = textHeader
+             document.title = title
+             console.log(document.title)
+        }
+
+  }
+
+  function saveFileAsTXT() {
+
+    console.log("saving")
+
+    const data = sheet.value;
+    if (!data) return false;
+
+    const filename = title
+
+    const type = 'text/plain';
+    var file = new Blob([data], {type: type});
+
+    if (window.navigator.msSaveOrOpenBlob) // IE10+
+        window.navigator.msSaveOrOpenBlob(file, filename);
+    else { // Others
+        var a = document.createElement("a"),
+                url = URL.createObjectURL(file);
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function() {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }, 0);
+    }
+
+  }
+  //code for command key
+  // const command = navigator.platform.toUpperCase().indexOf('MAC')>=0 ? e.metaKey : e.ctrlKey;
+
+
+
+  //markdown links
+  // const isSelected = writeSheet.getSelection().length;
+  //       // markdown links
+  //       if (item.kind === 'string' && isSelected) {
+  //         const clipboardData = e.clipboardData || window.clipboardData;
+  //         var url = clipboardData.getData('Text').trim();
+  //         if ( url.startsWith("http://") || url.startsWith("https://") ) {
+  //           // replace pasted text with markdown link
+  //           e.preventDefault();
+  //           const text = writeSheet.getSelection();
+  //           const link = `[${text}](${url})`;
+  //           writeLog("Paste URL", {props: {url: link}});
+  //           writeSheet.replaceSelection(link);
+  //         }
+  //       }
+
+
+  //fullscreen toggle
+
+  // function enterFullscreen(){
+
+
+  //     const docEl = document.documentElement;
+  //     const isInFullscreen = detectFullscreen();
+  //     if (isInFullscreen) return false;
+      
+  //     if (docEl.requestFullscreen)               docEl.requestFullscreen();
+  //     else if (docEl['mozRequestFullScreen'])    docEl['mozRequestFullScreen']();
+  //     else if (docEl['webkitRequestFullscreen']) docEl['webkitRequestFullscreen']();
+  //     else if (docEl['msRequestFullscreen'])     docEl['msRequestFullscreen']();
+  //     writeLog("Fullscreen", {props: {type: 'Enter'}});
+  //     writeSheet.focus();
+
+  //   }
+
+  //   function exitFullscreen(){
+
+  //     const docEl = document.documentElement;
+  //     const isInFullscreen = detectFullscreen();
+  //     if (!isInFullscreen) return false;
+      
+  //     if (document.exitFullscreen)               document.exitFullscreen();
+  //     else if (document['webkitExitFullscreen']) document['webkitExitFullscreen']();
+  //     else if (document['mozCancelFullScreen'])  document['mozCancelFullScreen']();
+  //     else if (document['msExitFullscreen'])     document['msExitFullscreen']();
+  //     writeLog("Fullscreen", {props: {type: 'Exit'}});
+  //     writeSheet.focus();
+    
+  //   }
+</script>
+
+</body>
+</html>
