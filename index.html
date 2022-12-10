@@ -199,6 +199,7 @@
   let spellcheck = false
   let title = "minutes.page"
   let stored = localStorage.getItem("savedFile")
+  let timestampRegex = /\[[0-9]{2}:[0-9]{2}:[0-9]{2}\]/gi
 
 
   function onload(){
@@ -242,22 +243,13 @@
     }
 
 
-    else if(enter && !event.shiftKey ){
+    else if(enter && !event.shiftKey && timestampRegex.test(text.slice(curPos, curPos + 10)) == false){
 
         event.preventDefault()
 
         newLine()
 
-         // sheet.value = text.slice(0, curPos) + "\n"  + "                  " + text.slice(curPos)
-         // sheet.selectionStart = curPos + 19
-         // sheet.selectionEnd = curPos + 19
-
       }
-
-    //   if (event.key === "l" && command && event.shiftKey) {
-    //   event.preventDefault();
-    //   toggleDarkMode();
-    // }
 
      if (event.key === "s" && (event.metaKey || event.ctrlKey) ){
         event.preventDefault()
