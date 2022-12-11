@@ -1,5 +1,5 @@
 # minutes.page
-Text editor with automated timestamps for recording meeting minutes. Available [here](https://blankminutes.netlify.app/).
+Web-based text editor with automated timestamps for recording meeting minutes. Available [here](https://blankminutes.netlify.app/).
 
 # Features
 - Shift + Enter to insert a new line apended with a timestamp
