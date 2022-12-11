@@ -11,7 +11,6 @@ Web-based text editor with automated timestamps for recording meeting minutes. A
 - Font customisation
 - Timestamp format options
 - Get it to work on mobile (?)
-- Markdown syntax for link insertions
 - Fullscreen mode
 
 # Report a bug
