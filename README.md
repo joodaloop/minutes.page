@@ -6,6 +6,8 @@ Web-based text editor with automated timestamps for recording meeting minutes. A
 - CTRL + S to save your work as a .txt file
 - All work is auto-saved to localStorage, nothing is sent to the server
 - Font options
+- Choose to auto-insert new timestamps after a minute of inactivity
+- Toggle spellchecker
 
 # Roadmap
 - Dark mode
