@@ -4,14 +4,14 @@ Web-based text editor with automated timestamps for recording meeting minutes. A
 # Features
 - Shift + Enter to insert a new line apended with a timestamp
 - CTRL + S to save your work as a .txt file
-- All work is auto-saved to localStorage, nothing is sent to the server.
+- All work is auto-saved to localStorage, nothing is sent to the server
+- Font options
 
 # Roadmap
 - Dark mode
-- Font customisation
+- More fonts
 - Timestamp format options
 - Get it to work on mobile (?)
-- Fullscreen mode
 
 # Report a bug
 If you find a bug that's annoying enough to make you want to report it, feel free to [raise an issue](https://github.com/stealsocks/minutes.page/issues) in this repo.
