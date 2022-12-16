@@ -9,12 +9,12 @@ Web-based text editor with automated timestamps for recording meeting minutes. A
 - Choose to auto-insert new timestamps after a minute of inactivity
 - Toggle spellchecker
 - Dark mode
+- Format your timestamps into one of four options
+- Works on mobile (hit Shift + Enter simultaenously)
 
-# Roadmap
-- More fonts
-- Timestamp format options
-- Get it to work better on mobile 
-- Support auto-formatting pasted text
+# Issues
+- Multi-line sentences will break the auto-formatting
+- Doesn't play nice with pasted text
 
 # Report a bug
 If you find a bug that's annoying enough to make you want to report it, feel free to [raise an issue](https://github.com/stealsocks/minutes.page/issues) in this repo.
