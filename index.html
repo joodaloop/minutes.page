@@ -1,6 +1,6 @@
 <html>
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="viewport" content="width=device-width, initial-scale=0.8"/>
   <title>  </title>
    <link rel="icon" type="image/x-icon" href="favicon.ico">
    <meta name="description" content="Text editor with automated timestamps for jotting down meeting minutes.">
@@ -29,7 +29,7 @@
     font-family: 'Quicksand', sans-serif;
   }
 
-  textarea {
+  #sheet {
     display: block;
     resize: none;
     border: none;
@@ -68,7 +68,7 @@
     display: block;
     width: var(--sidebar-width);
     transform: translate(-100%, 0px);
-    z-index: 100;
+    z-index: 5;
     background: var(--sidebar-color);
     font-size: 16px;
     transition: transform 350ms ease 0s;
@@ -107,15 +107,20 @@
       filter: invert(100%);
   }
 
-  .dark > #font-menu button{
+  .dark > #font-menu button, .dark > #format-menu button{
      background: var(--second-color);
       color: var(--main-color);
   }
 
-  .dark > #font-menu {
+  .dark > #font-menu, .dark > #format-menu {
      background: var(--second-color);
       color: var(--main-color);
       border-color: var(--main-color);
+  }
+
+  .dark > #read {
+       color:  #aaa;
+       background: var(--second-color);
   }
 
   #top-menu{
@@ -202,11 +207,12 @@
     position: absolute;
     border-radius: 4px;
     border:  solid 1px black;
-    top:  60px;
-    right:  80px;
+    top:  57px;
+    right:  18px;
     transition: opacity 0.3s ease;
     padding: 5px 0px;
     background: var(--main-color);
+    z-index: 3;
   }
 
   #font-menu button{
@@ -221,16 +227,65 @@
     font-weight: 600;
   }
 
+  #format-menu{
+    position: fixed;
+    z-index: 2;
+    top: 57px;
+    border: solid 1px black;
+    padding: 10px 15px;
+    border-radius: 4px;
+    background: white;
+    right: 20px;
+    display: none;
+    transition: opacity 0.3s ease;
+  }
+
+  #format-menu button{
+    width:  fit-content;
+    display: block;
+  }
+
+  #read{
+    position: fixed;
+    top: 20px;
+    z-index: 1;
+    resize: none;
+    border: none;
+    overflow: auto;
+    outline: none;
+    font-size: 18px;
+    font-family: 'Source Code Pro', monospace;
+    caret-color: #333;
+    color: #999;
+    box-sizing: border-box;
+    line-height: 1.6em;
+    user-select: auto;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    width: calc(100% - var(--margin-left));
+    padding: 30px;
+    padding-left: 80px;
+    margin-top: 40px;
+    margin-left: 40px;
+    overflow-y: scroll;
+    white-space: pre-wrap;
+    transition: transform 0.3s ease;
+    transition: margin 0.3s ease;
+    transition: opacity 0.3s ease;
+    height: 100%;
+    opacity: 0;
+    display: none;
+  }
+
 
   @media screen and (max-device-width: 640px) {
 
     :root{
       --textarea-left-margin:  10px;
-      --sidebar-width: 100vw;
-
+      --sidebar-width: calc(100vw - 60px);
     }
 
-      textarea {
+      #sheet {
        padding-left: 10px;
        padding-right: 10px;
        margin-left: 10px;
@@ -239,10 +294,19 @@
        font-size: 12px;
       }
 
+      #read{
+         padding-left: 10px;
+       padding-right: 10px;
+       margin-left: 10px;
+       margin-right: 0px;
+       width: calc(100% - 20px);
+      font-size: 12px;
+      }
+
       #sidebar{
         font-size: 16px;
         width: var(--sidebar-width);
-        height: 100%;
+        height: calc(100vh - 90px);
       }
 
       #popup{
@@ -261,16 +325,17 @@
     <button id=toggle-button onclick="toggleSidebar()"> <img src="logo.jpg"> </button>
 
     <div id=right>
-      <button onclick="toggleDarkMode()"> <img id=dark-image src="dark.jpg"> </button>
+       <button onclick="toggleDarkMode()"> <img id=dark-image src="dark.jpg"> </button>
+      <button onclick="toggleFormatMenu()"> <img id=format-image src="format.jpg"> </button>  
       <button onclick="toggleAutomatedTimestamps()"> <img id=automated-image src="auto.jpg"> </button>
-      <button onclick="toggleFontSettings()"> <img id=font-image src="fonts.jpg"> </button>
-      <button onclick="toggleSpellcheck()"> <img id=spellcheck-image src="spellcheck.jpg"> </button>      
+      <button onclick="toggleSpellcheck()"> <img id=spellcheck-image src="spellcheck.jpg"> </button>  
+      <button onclick="toggleFontSettings()"> <img id=font-image src="fonts.jpg"> </button>        
     </div>
 
   </div>
 
   <div id=sidebar> 
-    <p> Text editor for jotting down meeting minutes. </p>
+   <p> Text editor for jotting down meeting minutes. </p>
 
       <p>Hit <b>Shift + Enter</b> to add a new line with a timestamp.</p>
 
@@ -284,10 +349,14 @@
       <a href="https://joodaloop.com"> Creator's site</a> <br>
       <a href="https://github.com/stealsocks/minutes.page/issues"> Report a bug</a></p>
 
+    <p style="font-size: 12px"><b>P.S:</b> Pasting or typing multi-line sentences will break the auto-formatting for those lines, but everything else will work fine. </p>
+
   </div>
 
 
-  <textarea id="sheet" class="sheet" spellcheck="false" placeholder="Start off with the meeting title..."></textarea>
+  <textarea id="sheet" readonly="true" class="sheet" spellcheck="false" placeholder="Start off with the meeting title..."></textarea>
+
+   <textarea id="read" readonly="true" placeholder="Start off with the meeting title..."></textarea>
 
   <div id=popup>  </div>
 
@@ -297,8 +366,14 @@
     <button onclick="changeFont(1)" style="font-family:'Red Hat Mono'"> Red Hat Mono </button>
       <button onclick="changeFont(2)" style="font-family:'Source Code Pro'"> Source Code Pro </button>
        <button onclick="changeFont(3)" style="font-family:'Courier New'"> Courier New </button>
+  </div>
 
-
+  <div id=format-menu>
+     <!-- <button id="24-hour-long" onclick="switchFormats(0)"> </button> -->
+      <button id="24-hour-short" onclick="switchFormats(1)"> </button>
+      <button id="12-hour-long" onclick="switchFormats(2)"> </button>
+      <button id="12-hour-short" onclick="switchFormats(3)"> </button>
+    
   </div>
 
 <script>
@@ -317,31 +392,38 @@
 
   let sheet = $("sheet")
   let time = $("timestamps")
+  const delay = 60000
   let sidebarStatus = false
   let spellcheck = false
   let fontMenuStatus = false
   let automatedTimestamps = false
   let darkMode = false
+  let formatMenu = false
   let title = "minutes.page"
   let stored = localStorage.getItem("savedFile")
-  let timestampRegex = /\[[0-9]{2}:[0-9]{2}:[0-9]{2}\]/i
+  let font = Number(localStorage.getItem("fontChoice"))
+  let timestampRegex = /\[[0-2][0-9]:[0-5][0-9]:[0-5][0-9]\]/i
+  let timestampRegex2 = /\[[0-2][0-9:[0-5][0-9]]/i
   let myTimeout
+  let menuUpdateTimeout
+  let popUpTimeout
   let blankSpace = "            "
   let timeStampLength = 10
-  let timeStampFormat = 1
+  let read = $('read') 
 
   function onload(){
     document.title = title
-    sheet.focus()
 
     if(stored != null){
       sheet.value = stored
        changeTitle()
     }
 
-    scroll()
-
-     // myTimeout = setTimeout(newTimeStampAtEnd, 5000);
+    if(font != null){
+      changeFont(font)
+    }
+     
+    sheet.readOnly = false
 
   }
 
@@ -352,13 +434,145 @@
   sheet.addEventListener('keydown', handleTab)
   sheet.addEventListener('keydown', handleArrowKeys)
   sheet.addEventListener('keyup', changeTitle)
+  // sheet.addEventListener('paste', handlePaste)
   sheet.addEventListener('input', saveToLocalStorage)
+
+
+//   function handlePaste(e) {
+//     var clipboardData, pastedData;
+
+//     // Stop data actually being pasted into div
+//     e.stopPropagation();
+//     e.preventDefault();
+
+//     // Get pasted data via clipboard API
+//     clipboardData = e.clipboardData || window.clipboardData;
+//     pastedData = clipboardData.getData('Text');
+
+//     // Do whatever with pasteddata
+//     curPos = sheet.selectionStart
+
+//     pastedData = pastedData.split("\n").map(a => a.trim() + "\n" + blankSpace )
+//     document.execCommand("insertText", false, pastedData);
+
+
+// }
+  
+
+  function convertHoursTo12HourFormat(hours){
+
+    if(hours == 24){
+
+      hours = 12
+    }
+
+    if(hours > 12){
+          hours = hours - 12
+        }
+
+    if(hours < 10){
+      hours = "0" + hours
+    }
+
+    return hours
+  }
+
+  function toggleFormatMenu(){
+
+    menu = $("format-menu")
+
+    if(formatMenu == true){
+       menu.style.opacity = 0
+       setTimeout( () => menu.style.display = "none", 300)
+       clearInterval(menuUpdateTimeout)   
+       formatMenu = false 
+       $("format-image").removeEventListener("click", resumeTyping)
+       $("toggle-button").style.pointerEvents = 'auto'
+       
+     }
+           
+
+    else {
+       // $("12-hour-short").innerHTML = newTimeStamp(3)
+       // $("12-hour-long").innerHTML = newTimeStamp(2)
+        updateFormatMenu()     
+        menu.style.display = "inline-block"
+        menuUpdateTimeout = setInterval(updateFormatMenu, 100)
+        formatMenu = true
+        setTimeout( () => menu.style.opacity = 1, 3)
+        switchFormats(0)
+        $("format-image").addEventListener("click", resumeTyping)
+        $("toggle-button").style.pointerEvents = 'none'
+     }
+
+      $("format-image").classList.toggle("selected-button")
+      
+    }
+
+  function switchFormats(code){
+
+      read.style.display = "inline-block"
+      setTimeout( () => read.style.opacity = 1, 3) 
+      
+      
+
+      let shortBlankSpace = "         "
+      let text = sheet.value
+      let lines = text.split("\n").map(a => a + "\n")
+
+      // long 24 hour
+      if(code == 0){
+          read.value = text 
+      }
+
+      // short 24 hour
+      else if(code == 1){
+
+        lines = lines.map(a => switchToShort24(a))
+        lines = lines.map(a => a.replace( /^\s{12}/, shortBlankSpace))
+        read.value = lines.reduce( (a,b) => a+b)
+      }
+
+      // long 12 hour
+      else if(code == 2){
+       lines = lines.map(a => switchToLong12(a))
+        read.value = lines.reduce( (a,b) => a+b)
+      }
+
+      // short 12 hour
+      else if(code == 3){
+        lines = lines.map(a => switchToShort12(a))
+       lines = lines.map(a => a.replace( /^\s{12}/, shortBlankSpace))
+
+        read.value = lines.reduce( (a,b) => a+b)
+      }
+
+      let buttons = $("format-menu").children
+
+      for(i=1; i < buttons.length + 1;i++ ){
+
+        if(i==code){
+           buttons[i - 1].style.fontWeight = "800"}
+
+        else{
+          buttons[i - 1].style.fontWeight = "400"
+        }
+      } 
+  }
+
+  function resumeTyping(){
+      
+      read.style.opacity = 0
+      setTimeout( () => read.style.display = "none", 300) 
+  }
+
+
 
   function toggleAutomatedTimestamps(){
 
       if(automatedTimestamps == false){
 
-        myTimeout = setTimeout(newTimeStampAtEnd, 60000);
+        myTimeout = setTimeout(newTimeStampAtEnd, delay);
         sheet.addEventListener('keydown', startWaiting)
         showPopup("Automated timestamps activated")
         automatedTimestamps = true
@@ -382,18 +596,19 @@
     sheet.selectionStart = text.length
     sheet.selectionEnd = text.length
 
-    document.execCommand("insertText", false, ("\n" + blankSpace + "\n" + newTimeStamp()));
-    myTimeout = setTimeout(newTimeStampAtEnd, 60000);
+    document.execCommand("insertText", false, ("\n" + blankSpace + "\n" + newTimeStamp(0)));
+    myTimeout = setTimeout(newTimeStampAtEnd, delay);
     scroll()
   }
 
   function scroll(){
-    sheet.scrollTop = sheet.scrollHeight;
+    sheet.blur()
+    sheet.focus()
   }
 
   function startWaiting(){
     clearTimeout(myTimeout);
-    myTimeout = setTimeout(newTimeStampAtEnd, 60000);
+    myTimeout = setTimeout(newTimeStampAtEnd, delay);
   }
 
 
@@ -404,12 +619,20 @@
         let curPos = sheet.selectionStart
         let text = sheet.value
         let before = text.slice(0, curPos)
+        let linesBefore = before.split("\n")
+        let lineBefore = linesBefore[linesBefore.length - 1]
         let last17OfBefore = before.slice(before.length - (blankSpace.length - 1), before.length)
 
-        if(last17OfBefore.trim().length == 0 && before[before.length - (blankSpace.length + 1)] == "\n"){
+        if(lineBefore.trim().length == 0 && lineBefore.length == blankSpace.length){
 
            sheet.selectionStart = curPos - blankSpace.length
             sheet.selectionEnd = curPos - blankSpace.length
+        }
+         
+
+        else if(timestampRegex.test(lineBefore) && (lineBefore.length == blankSpace.length)){
+              sheet.selectionStart = curPos - (timeStampLength + 2)
+            sheet.selectionEnd = curPos - (timeStampLength + 2) 
         }
       }
 
@@ -418,13 +641,43 @@
         let curPos = sheet.selectionStart
         let text = sheet.value
         let after = text.slice(curPos)
-        
 
-        if(after[0] == "\n"){
+        let lineAfter = after.split("\n")[1]
+
+        let isLineAfterBlank = lineAfter.trim().length == 0
+
+
+        if(after[0] == "\n" && isLineAfterBlank){
+
+                let fillBlankSpace = ""
+
+              for(i=0; i < blankSpace.length - lineAfter.length; i++){
+
+                fillBlankSpace += " "
+              }   
+
+                if(fillBlankSpace.length > 0) {
+
+                setTimeout( () => {
+                  sheet.selectionStart = curPos + (blankSpace.length - fillBlankSpace.length + 1)
+                  sheet.selectionEnd = curPos + (blankSpace.length - fillBlankSpace.length + 1)
+                  document.execCommand("insertText", false, fillBlankSpace)
+                         }, 2)
+                }
+
+              else{
+                  sheet.selectionStart = curPos + (blankSpace.length )
+                  sheet.selectionEnd = curPos + (blankSpace.length )
+              }
+
+        }
+
+        else if(after[0] == "\n"){
 
            sheet.selectionStart = curPos + blankSpace.length
             sheet.selectionEnd = curPos + blankSpace.length
         }
+
       }
 
   }
@@ -451,7 +704,7 @@
           
         event.preventDefault()
 
-        document.execCommand("insertText", false, ("\n" + newTimeStamp()));
+        document.execCommand("insertText", false, ("\n" + newTimeStamp(0)));
         scroll()
 
         // setTimeout( () => { sheet.value = text.slice(0, curPos) + "\n" + newTimeStamp() + text.slice(curPos) 
@@ -521,15 +774,36 @@
     let curPos = sheet.selectionStart
     let curEnd = sheet.selectionEnd
     let text = sheet.value
+    let before = text.slice(0, curPos)
     const backspace = event.key === "Delete" || event.key === "Backspace";
     let isLineStartingWithTimestamp = timestampRegex.test(text.slice(curPos, curPos + timeStampLength))
+    let linesAfter = text.slice(curPos).split("\n")
+    let lineAfter = linesAfter[0]
 
     if(curPos == curEnd){
 
+    if( backspace && (event.metaKey || event.ctrlKey)){
 
-    if(backspace && !(event.metaKey || event.ctrlKey)){
+        if(lineAfter.trim().length == 0){
 
-        let before = text.slice(0, curPos)
+          setTimeout( () => {
+            
+            let newCurPos = sheet.selectionStart
+            let newCurEnd = sheet.selectionEnd
+            sheet.selectionStart = newCurPos - 1
+            sheet.selectionEnd = newCurPos 
+
+            // execute a backspace action
+            document.execCommand("delete", false)
+            
+             }, 1)
+
+       }
+     }
+
+    else if(backspace && !(event.metaKey || event.ctrlKey)){
+
+        
         let linesBefore = before.split("\n")
        
         let lineBefore = linesBefore[linesBefore.length-2]
@@ -585,23 +859,6 @@
     }
 
 
-  function newTimeStamp(){
-    let d =  new Date()
-        let seconds = d.getSeconds()
-        let minutes = d.getMinutes()
-        let hours = d.getHours()
-
-    if(timeStampFormat == 1){
-
-        if(seconds < 10){ seconds = "0"+seconds}
-        if(hours < 10){ hours = "0"+hours}
-        if(minutes < 10){ minutes = "0"+minutes}
-
-        return ("["+hours+":"+minutes+":"+seconds+"]  ")
-    }
-  }
-
-
   function toggleSpellcheck(){
 
         if(spellcheck == true){
@@ -637,8 +894,7 @@
     else{
            fontMenuStatus = true
             $("font-menu").style.display = "inline-block"
-             sheet.addEventListener("click", toggleFontSettings)
-          
+             sheet.addEventListener("click", toggleFontSettings)          
           setTimeout( () => $("font-menu").style.opacity = "1", 100)
                     
     }
@@ -649,10 +905,12 @@
 
   function changeFont(code){
 
-
     let fontArray = ['Courier Prime','Red Hat Mono','Source Code Pro', 'Courier New']
 
     sheet.style.fontFamily = fontArray[code]
+    read.style.fontFamily = fontArray[code]
+    localStorage.removeItem("fontChoice")
+    localStorage.setItem("fontChoice", code.toString())
 
     let buttons = $("font-menu").children
 
@@ -693,45 +951,55 @@
             $("sidebar").style.transform = "translateX(-100%)"  
             sidebarStatus = false
             $("sheet").style.marginLeft = "var(--textarea-left-margin)"
+            read.style.marginLeft = "var(--textarea-left-margin)"
             
-
         }
 
         else{
            $("sidebar").style.transform = "translateX(0px)"
            sidebarStatus = true
            $("sheet").style.marginLeft = "calc(var(--textarea-left-margin) + var(--sidebar-width))"
-           
+           read.style.marginLeft = "calc(var(--textarea-left-margin) + var(--sidebar-width))"
          }
   }
 
 
   function closeSideBar(){
-    $("sidebar").style.transform = "translateX(-100%)"  
+            $("sidebar").style.transform = "translateX(-100%)"  
             sidebarStatus = false
             $("sheet").style.marginLeft = "var(--textarea-left-margin)"
+            read.style.marginLeft = "var(--textarea-left-margin)"
   }
 
 
   function showPopup(text){
-    $("popup").innerText = text
-    $("popup").style.opacity = 1
 
-    setTimeout( hidePopup, 1500)
+    clearTimeout(popUpTimeout)
+    
+    $("popup").style.display = "inline-block"
+    $("popup").innerText = text
+    $("popup").style.opacity = 0
+    setTimeout(() => $("popup").style.opacity = 1, 1)
+
+    popUpTimeout = setTimeout( hidePopup, 1500)
   }
 
 
   function hidePopup(){
 
      $("popup").style.opacity = 0
+
+     setTimeout( () => $("popup").style.display = "none", 300)
   }
+
 
 
   function saveToLocalStorage(){
 
-        localStorage.clear()
+        localStorage.removeItem("savedFile")
         localStorage.setItem("savedFile", sheet.value)
   }
+
 
 
   function changeTitle(){
@@ -739,9 +1007,9 @@
         let textHeader
         let text = sheet.value.split("\n")[0] // .reduce( (a,b) => a.trim() + " " + b.trim())
 
-        if( text.length > 0){
+        if( text.trim().length > 0){
 
-           textHeader = text.slice(0, Math.min(sheet.value.length, 20)).trim()
+           textHeader = text.slice(0, Math.min(sheet.value.length, 24)).trim()
 
         }
 
@@ -757,6 +1025,7 @@
              document.title = title
         }
   }
+
 
 
   function saveFileAsTXT() {
@@ -787,6 +1056,104 @@
     }
   }
 
+
+  function switchToLong12(line){
+
+      if(timestampRegex.test(line)){
+
+        let timeStamp = line.match(timestampRegex)[0]
+
+        let hours = Number(timeStamp.slice(1,3))
+
+        hours = convertHoursTo12HourFormat(hours)
+
+        newTimestamp = "[" + hours + timeStamp.slice(3,10)
+
+        line = line.replace(timeStamp, newTimestamp)
+        console.log(line)
+
+      }
+
+      return line
+  }
+
+  function switchToShort12(line) {
+
+     if(timestampRegex.test(line)){
+
+        let timeStamp = line.match(timestampRegex)[0]
+        let hours = Number(timeStamp.slice(1,3))
+        hours = convertHoursTo12HourFormat(hours)
+        newTimestamp = "[" + hours + timeStamp.slice(3,6) + "]"
+        line = line.replace(timeStamp, newTimestamp)
+         console.log(line)
+      }
+      return line   
+  }
+
+  function switchToShort24(line){
+    if(timestampRegex.test(line)){
+
+        let timeStamp = line.match(timestampRegex)[0]
+        newTimestamp = timeStamp.slice(0,6) + "]" 
+        line = line.replace(timeStamp, newTimestamp)
+        console.log(line)
+      }
+      return line   
+  }
+
+
+  function updateFormatMenu(){
+
+      // $("24-hour-long").innerHTML = "24-hour (long): " + newTimeStamp(0)
+      $("24-hour-short").innerHTML = "24-hour (short): " + newTimeStamp(1)
+      $("12-hour-long").innerHTML = "12-hour (long): " + newTimeStamp(2)
+      $("12-hour-short").innerHTML = "12-hour (short): " + newTimeStamp(3)
+
+  }
+
+  function newTimeStamp(timeStampFormat){
+    let d =  new Date()
+        let seconds = d.getSeconds()
+        let minutes = d.getMinutes()
+        let hours = d.getHours()
+
+    // return current time in 24 hour long format
+    if(timeStampFormat == 0){
+
+        if(seconds < 10){ seconds = "0"+seconds}
+        if(hours < 10){ hours = "0"+hours}
+        if(minutes < 10){ minutes = "0"+minutes}
+
+        return ("["+hours+":"+minutes+":"+seconds+"]  ")
+    }
+
+    // return current time in 24 hour short format
+    else if(timeStampFormat == 1){
+        if(hours < 10){ hours = "0"+hours}
+        if(minutes < 10){ minutes = "0"+minutes}
+
+        return ("["+hours+":"+minutes+"]  ")
+    }
+
+    // return current time in 12 hour long format
+     else if(timeStampFormat == 2){
+        if(seconds < 10){ seconds = "0"+seconds}
+        hours = convertHoursTo12HourFormat(hours)
+        if(minutes < 10){ minutes = "0"+minutes}
+
+        return ("["+hours+":"+minutes+":"+seconds+"]  ")
+    }
+
+    // return current time in 12 hour short format
+     else if(timeStampFormat == 3){
+        
+        hours = convertHoursTo12HourFormat(hours)
+        if(minutes < 10){ minutes = "0" +minutes}
+
+        return ("["+hours+":"+minutes+"]  ")
+    }
+  }
   
   //code for command key
   // const command = navigator.platform.toUpperCase().indexOf('MAC')>=0 ? e.metaKey : e.ctrlKey;
